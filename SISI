@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ainhoa vintage · stock</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Mono:wght@300;400&display=swap');
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background: #f6f4f1;
+  font-family: "DM Mono", monospace;
+  color: #1c1a18;
+  min-height: 100vh;
+}
+
+header {
+  background: #ffffff;
+  border-bottom: 2px solid #1c1a18;
+  padding: 0 20px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  font-weight: 300;
+  letter-spacing: .02em;
+  color: #1c1a18;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-sub {
+  font-size: .48rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #928c84;
+}
+
+#reloadBtn {
+  background: #1c1a18;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-family: "DM Mono", monospace;
+  font-size: .54rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 7px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#reloadBtn.ok  { background: #2d6b4a; }
+#reloadBtn.err { background: #7a2828; }
+
+.main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 16px 56px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 2px solid #1c1a18;
+  margin-bottom: 20px;
+}
+.tab {
+  font-family: "DM Mono", monospace;
+  font-size: .58rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  color: #928c84;
+  transition: all .15s;
+}
+.tab.active { color: #1c1a18; border-bottom: 3px solid #1c1a18; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+.box {
+  background: #ffffff;
+  border: 1.5px solid #e4e0da;
+  border-radius: 3px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.lbl {
+  display: block;
+  font-size: .5rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #928c84;
+  margin-bottom: 8px;
+}
+
+.row { display: flex; gap: 8px; }
+
+textarea, input[type=text] {
+  background: #f6f4f1;
+  border: 1.5px solid #e4e0da;
+  border-radius: 2px;
+  padding: 10px 12px;
+  font-family: "DM Mono", monospace;
+  font-size: .88rem;
+  color: #1c1a18;
+  outline: none;
+}
+textarea { flex:1; resize:vertical; min-height:64px; line-height:1.7; }
+input[type=text] { flex:1; }
+textarea:focus, input[type=text]:focus { border-color: #1c1a18; }
+textarea::placeholder, input[type=text]::placeholder { color:#928c84; font-style:italic; font-size:.76rem; }
+
+.btn {
+  background: #1c1a18;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  padding: 10px 18px;
+  font-family: "DM Mono", monospace;
+  font-size: .58rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  align-self: stretch;
+  white-space: nowrap;
+}
+
+.hint { font-size:.54rem; color:#928c84; margin-top:8px; line-height:1.6; }
+
+.drop-zone {
+  border: 2px dashed #c8c3bc;
+  border-radius: 3px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+}
+.drop-zone.over { border-color: #1c1a18; background: #f0ece6; }
+.drop-zone .ico { font-size:1.5rem; margin-bottom:8px; }
+.drop-zone p { font-size:.72rem; color:#928c84; line-height:1.8; }
+.drop-zone strong { color:#1c1a18; }
+input[type=file] { display:none; }
+
+#previewWrap { margin-top:12px; position:relative; display:none; }
+#previewImg { width:100%; max-height:200px; object-fit:contain; border-radius:3px; border:1.5px solid #e4e0da; }
+.clear-x {
+  position:absolute; top:6px; right:6px;
+  background:rgba(28,26,24,.7); color:#fff;
+  border:none; border-radius:50%;
+  width:24px; height:24px; font-size:.65rem;
+  cursor:pointer;
+}
+#photoActs { display:none; margin-top:10px; }
+.btn-out {
+  background:none; border:1.5px solid #e4e0da; border-radius:2px;
+  padding:9px 16px; font-family:"DM Mono",monospace;
+  font-size:.56rem; letter-spacing:.08em; text-transform:uppercase;
+  cursor:pointer; color:#1c1a18;
+}
+#manualEntry { display:none; margin-top:14px; }
+
+.results { display:flex; flex-direction:column; gap:10px; }
+
+.card {
+  background:#fff; border:1.5px solid #e4e0da;
+  border-radius:3px; padding:15px 17px;
+  animation: fi .18s ease;
+}
+@keyframes fi { from{opacity:0;transform:translateY(3px)} to{opacity:1} }
+
+.card.found    { border-left:4px solid #2d6b4a; }
+.card.noprice  { border-left:4px solid #7a5c10; }
+.card.notfound { border-left:4px solid #7a2828; }
+.card.amb      { border-left:4px solid #1c1a18; }
+
+.ctop { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+.dot  { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.found .dot    { background:#2d6b4a; }
+.noprice .dot  { background:#7a5c10; }
+.notfound .dot { background:#7a2828; }
+.amb .dot      { background:#1c1a18; }
+
+.ctag {
+  background:#f0ece6; border:1px solid #e4e0da;
+  border-radius:2px; padding:2px 9px;
+  font-size:.68rem; font-weight:500; letter-spacing:.06em;
+}
+
+.pname {
+  font-family:"Cormorant Garamond",serif;
+  font-size:1.1rem; font-style:italic; font-weight:300;
+  line-height:1.4; margin-bottom:8px;
+}
+
+.prow { display:flex; align-items:baseline; gap:10px; }
+.plbl { font-size:.48rem; letter-spacing:.16em; text-transform:uppercase; color:#928c84; }
+.pval { font-family:"Cormorant Garamond",serif; font-size:1.3rem; color:#2d6b4a; }
+
+.errmsg { font-size:.78rem; color:#7a2828; margin-bottom:6px; }
+
+.sim-list { margin-top:9px; }
+.sim-lbl  { font-size:.48rem; letter-spacing:.16em; text-transform:uppercase; color:#928c84; margin-bottom:5px; }
+.sim-item {
+  background:#f6f4f1; border:1px solid #e4e0da;
+  border-radius:2px; padding:8px 11px; margin-bottom:4px;
+  font-size:.75rem; cursor:pointer;
+  display:flex; align-items:center; gap:6px;
+}
+.sim-pr { color:#928c84; font-size:.68rem; margin-left:auto; }
+
+.aopt { background:#f6f4f1; border:1px solid #e4e0da; border-radius:2px; padding:9px 12px; margin-bottom:4px; }
+.acod { font-weight:500; margin-bottom:2px; font-size:.8rem; }
+.apr  { color:#2d6b4a; font-size:1rem; font-family:"Cormorant Garamond",serif; }
+.apna { color:#928c84; font-style:italic; font-size:.76rem; }
+.aq   { font-size:.62rem; color:#928c84; margin-top:8px; }
+
+footer {
+  text-align:center; padding:22px 16px;
+  font-size:.48rem; color:#928c84;
+  letter-spacing:.14em; text-transform:uppercase;
+  border-top:1px solid #e4e0da; margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">ainhoa</span>
+  <div class="header-right">
+    <span class="header-sub">consulta de stock</span>
+    <button id="reloadBtn" onclick="reloadStock()">⟳ cargando...</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="tabs">
+    <button class="tab active" id="tab-code" onclick="switchTab('code')"># Código</button>
+    <button class="tab" id="tab-photo" onclick="switchTab('photo')">◎ Foto</button>
+  </div>
+
+  <div class="panel active" id="panel-code">
+    <div class="box">
+      <label class="lbl">Código de prenda</label>
+      <div class="row">
+        <textarea id="queryInput" placeholder="AIN-107-7&#10;103-15&#10;101-32"></textarea>
+        <button class="btn" onclick="searchByCode()">Buscar</button>
+      </div>
+      <p class="hint">Formatos: AIN-107-7 · 107-07 · 107 07 · 107/7 — uno por línea para múltiples</p>
+    </div>
+    <div id="results-code" class="results"></div>
+  </div>
+
+  <div class="panel" id="panel-photo">
+    <div class="box">
+      <label class="lbl">Foto de la etiqueta</label>
+      <div class="drop-zone" id="dropZone">
+        <div class="ico">📷</div>
+        <p>Arrastrá la foto acá<br>o <strong>tocá para elegirla</strong></p>
+        <input type="file" id="photoInput" accept="image/*">
+      </div>
+      <div id="previewWrap">
+        <img id="previewImg" src="" alt="">
+        <button class="clear-x" onclick="clearPhoto()">✕</button>
+      </div>
+      <div id="photoActs">
+        <button class="btn-out" onclick="clearPhoto()">Cambiar foto</button>
+      </div>
+      <div id="manualEntry">
+        <label class="lbl" style="margin-top:14px;display:block;">Código que ves en la etiqueta</label>
+        <div class="row">
+          <input type="text" id="photoCodeInput" placeholder="AIN-108-05 · 108-5...">
+          <button class="btn" onclick="searchFromPhoto()">Buscar</button>
+        </div>
+      </div>
+    </div>
+    <div id="results-photo" class="results"></div>
+  </div>
+
+</div>
+
+<footer>ainhoa vintage &middot; sistema interno &middot; stock en tiempo real</footer>
+
+<script>
+var SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSfthwJJ7qGfyzJSaXa_8NwVJTpnQrEsQ4xK1Q0lEAiQ-bhtExk8DGfXVU4XzO5U6Bjcwt8AfXNLbWV/pub?gid=0&single=true&output=csv';
+var stock = [];
+
+function reloadStock() {
+  var btn = document.getElementById('reloadBtn');
+  btn.textContent = '⟳ cargando...';
+  btn.className = '';
+  fetch(SHEETS_URL)
+    .then(function(r) { return r.text(); })
+    .then(function(t) {
+      var d = parseCSV(t);
+      if (d.length > 0) {
+        stock = d;
+        btn.textContent = '✓ ' + d.length + ' prendas — recargar';
+        btn.className = 'ok';
+      } else {
+        btn.textContent = '✗ reintentar';
+        btn.className = 'err';
+      }
+    })
+    .catch(function() {
+      btn.textContent = '✗ reintentar';
+      btn.className = 'err';
+    });
+}
+
+function parseCSV(text) {
+  var lines = text.split('\n');
+  var result = [];
+  for (var i = 1; i < lines.length; i++) {
+    var c = parseLine(lines[i]);
+    if (!c || c.length < 14) continue;
+    var cp = parseInt(c[0], 10);
+    var np = String(c[2] || '').replace(/\.0$/, '').trim();
+    if (isNaN(cp) || !np) continue;
+    var p = String(c[6] || '').trim();
+    if (!p) continue;
+    var raw = c[13] ? String(c[13]).replace(/[^0-9]/g, '') : '';
+    var v = raw ? parseInt(raw, 10) : null;
+    result.push({ c: cp + '-' + np, p: p, v: (v && !isNaN(v)) ? v : null });
+  }
+  return result;
+}
+
+function parseLine(line) {
+  var result = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      result.push(cur.trim()); cur = '';
+    } else { cur += ch; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function normCode(raw) {
+  var s = raw.trim().replace(/^AIN[-\s]*/i, '').toUpperCase();
+  s = s.replace(/\s+/g, '').replace(/[\/\\]/g, '-').replace(/-+$/, '');
+  var parts = s.split('-');
+  if (parts.length >= 2) {
+    var a = parseInt(parts[0], 10), b = parseInt(parts[1], 10);
+    if (!isNaN(a) && !isNaN(b)) return a + '-' + b;
+  }
+  return s.toLowerCase();
+}
+
+function findItems(raw) {
+  var n = normCode(raw);
+  var res = [];
+  for (var i = 0; i < stock.length; i++) {
+    if (stock[i].c.toLowerCase() === n) res.push(stock[i]);
+  }
+  return res;
+}
+
+function findSimilar(raw) {
+  var n = normCode(raw);
+  var prov = n.split('-')[0];
+  function sc(a, b) {
+    var k = 0, l = Math.min(a.length, b.length);
+    for (var i = 0; i < l; i++) if (a[i] === b[i]) k++;
+    return k / Math.max(a.length, b.length);
+  }
+  var scored = [];
+  for (var i = 0; i < stock.length; i++) {
+    if (stock[i].p) scored.push({ item: stock[i], s: sc(stock[i].c, n) });
+  }
+  scored.sort(function(a, b) { return b.s - a.s; });
+  var res = [];
+  for (var j = 0; j < Math.min(5, scored.length); j++) res.push(scored[j].item);
+  return res;
+}
+
+function fmt(v) { return '$' + v.toLocaleString('es-AR'); }
+
+function renderCard(raw) {
+  if (!stock.length) {
+    return '<div class="card notfound"><div class="ctop"><div class="dot"></div><span class="ctag">' + raw + '</span></div><p class="errmsg">Stock no cargado. Tocá "recargar" arriba.</p></div>';
+  }
+  var matches = findItems(raw);
+  if (matches.length === 0) {
+    var sim = findSimilar(raw);
+    var h = '<div class="card notfound"><div class="ctop"><div class="dot"></div><span class="ctag">' + raw.trim() + '</span></div><p class="errmsg">No encontré ese código.</p>';
+    if (sim.length) {
+      h += '<div class="sim-list"><p class="sim-lbl">Similares</p>';
+      for (var i = 0; i < sim.length; i++) {
+        var pr = sim[i].v ? fmt(sim[i].v) : '— sin precio';
+        h += '<div class="sim-item" onclick="fillCode(\'' + sim[i].c + '\')"><strong>' + sim[i].c + '</strong> · ' + (sim[i].p || '—') + '<span class="sim-pr">' + pr + '</span></div>';
+      }
+      h += '</div>';
+    }
+    return h + '</div>';
+  }
+  if (matches.length > 1) {
+    var h2 = '<div class="card amb"><div class="ctop"><div class="dot"></div><span class="ctag">' + raw.trim() + '</span><span style="font-size:.62rem;color:#928c84;margin-left:4px">Varias coincidencias</span></div>';
+    for (var j = 0; j < matches.length; j++) {
+      var pr2 = matches[j].v ? '<span class="apr">' + fmt(matches[j].v) + '</span>' : '<span class="apna">Sin precio</span>';
+      h2 += '<div class="aopt"><div class="acod">' + (j+1) + '. ' + matches[j].c + '</div><div style="font-size:.8rem;margin-bottom:3px">' + (matches[j].p || '—') + '</div>' + pr2 + '</div>';
+    }
+    return h2 + '<p class="aq">¿Cuál querés consultar?</p></div>';
+  }
+  var item = matches[0];
+  if (!item.v) {
+    return '<div class="card noprice"><div class="ctop"><div class="dot"></div><span class="ctag">' + item.c + '</span></div><p class="pname">' + item.p + '</p><p style="font-size:.74rem;color:#928c84;font-style:italic">Sin precio asignado.</p></div>';
+  }
+  return '<div class="card found"><div class="ctop"><div class="dot"></div><span class="ctag">' + item.c + '</span></div><p class="pname">' + item.p + '</p><div class="prow"><span class="plbl">Precio de venta</span><span class="pval">' + fmt(item.v) + '</span></div></div>';
+}
+
+function searchByCode() {
+  var raw = document.getElementById('queryInput').value.trim();
+  if (!raw) return;
+  var qs = raw.split('\n');
+  var html = '';
+  for (var i = 0; i < qs.length; i++) {
+    var q = qs[i].trim();
+    if (q) html += renderCard(q);
+  }
+  document.getElementById('results-code').innerHTML = html;
+}
+
+function fillCode(code) {
+  switchTab('code');
+  document.getElementById('queryInput').value = code;
+  searchByCode();
+}
+
+function searchFromPhoto() {
+  var code = document.getElementById('photoCodeInput').value.trim();
+  if (!code) return;
+  document.getElementById('results-photo').innerHTML = renderCard(code);
+}
+
+var dz = document.getElementById('dropZone');
+var pi = document.getElementById('photoInput');
+
+dz.onclick = function() { pi.click(); };
+dz.ondragover = function(e) { e.preventDefault(); dz.classList.add('over'); };
+dz.ondragleave = function() { dz.classList.remove('over'); };
+dz.ondrop = function(e) {
+  e.preventDefault(); dz.classList.remove('over');
+  if (e.dataTransfer.files[0]) loadPhoto(e.dataTransfer.files[0]);
+};
+pi.onchange = function() { if (pi.files[0]) loadPhoto(pi.files[0]); };
+
+function loadPhoto(file) {
+  if (!file.type.startsWith('image/')) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('photoActs').style.display = 'block';
+    document.getElementById('manualEntry').style.display = 'block';
+    dz.style.display = 'none';
+    document.getElementById('results-photo').innerHTML = '';
+    document.getElementById('photoCodeInput').focus();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  pi.value = '';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('photoActs').style.display = 'none';
+  document.getElementById('manualEntry').style.display = 'none';
+  document.getElementById('photoCodeInput').value = '';
+  dz.style.display = 'block';
+  document.getElementById('results-photo').innerHTML = '';
+}
+
+function switchTab(name) {
+  var tabs = ['code', 'photo'];
+  for (var i = 0; i < tabs.length; i++) {
+    var t = tabs[i];
+    document.getElementById('tab-' + t).className = 'tab' + (t === name ? ' active' : '');
+    document.getElementById('panel-' + t).className = 'panel' + (t === name ? ' active' : '');
+  }
+}
+
+document.getElementById('queryInput').onkeydown = function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); searchByCode(); }
+};
+document.getElementById('photoCodeInput').onkeydown = function(e) {
+  if (e.key === 'Enter') searchFromPhoto();
+};
+
+reloadStock();
+</script>
+</body>
+</html>
