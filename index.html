@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ainhoa Vintage · Stock</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #f5f0ea;
+  --surface: #fffdf9;
+  --border: #d9cfc3;
+  --text: #1a1510;
+  --muted: #7a6e64;
+  --accent: #8b4513;
+  --accent-light: #c47a3a;
+  --green: #2d6a4f;
+  --red: #8b2020;
+  --tag-bg: #ede5d8;
+  --yellow: #7a5c00;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  color: var(--text);
+}
+
+header {
+  background: var(--text);
+  color: var(--bg);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--accent);
+}
+
+.header-left { display: flex; align-items: baseline; gap: 12px; }
+
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.subtitle {
+  font-size: 0.6rem;
+  color: #b09a88;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.stock-badge {
+  font-size: 0.6rem;
+  background: #2d2520;
+  color: #b09a88;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  font-family: 'DM Mono', monospace;
+}
+.stock-badge:hover { background: #3d3530; }
+.stock-badge.loading { color: var(--accent-light); }
+.stock-badge.ok { color: #6fcf97; }
+.stock-badge.err { color: #eb5757; }
+
+.main {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.tab {
+  flex: 1;
+  padding: 11px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tab:first-child { border-right: 1.5px solid var(--border); }
+
+.tab.active {
+  background: var(--text);
+  color: var(--bg);
+}
+
+/* ── Panel código ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+.search-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.search-box label {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.input-row { display: flex; gap: 8px; }
+
+textarea {
+  flex: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--text);
+  resize: vertical;
+  min-height: 64px;
+  line-height: 1.6;
+  transition: border-color 0.15s;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+textarea::placeholder { color: var(--muted); font-style: italic; font-size: 0.8rem; }
+
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  align-self: stretch;
+}
+.btn:hover { background: var(--accent-light); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.hint {
+  font-size: 0.6rem;
+  color: var(--muted);
+  margin-top: 7px;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+/* ── Panel foto ── */
+.photo-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+.photo-box label {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 4px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: var(--tag-bg);
+}
+
+.drop-zone p { font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+.drop-zone strong { color: var(--accent); }
+.drop-zone .icon { font-size: 2rem; margin-bottom: 8px; }
+
+input[type="file"] { display: none; }
+
+#previewWrap {
+  margin-top: 12px;
+  position: relative;
+  display: none;
+}
+
+#previewImg {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+}
+
+.clear-photo {
+  position: absolute;
+  top: 6px; right: 6px;
+  background: rgba(26,21,16,0.75);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px; height: 24px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.photo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-secondary {
+  flex: 1;
+  background: var(--surface);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  padding: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  text-align: center;
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+/* ── Resultados ── */
+.results { display: flex; flex-direction: column; gap: 10px; }
+
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  animation: fadeIn 0.18s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; } }
+
+.card.found  { border-left: 4px solid var(--green); }
+.card.no-price { border-left: 4px solid var(--accent-light); }
+.card.not-found { border-left: 4px solid var(--red); }
+.card.ambiguous { border-left: 4px solid var(--yellow); }
+.card.thinking { border-left: 4px solid var(--border); }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.found .status-dot { background: var(--green); }
+.no-price .status-dot { background: var(--accent-light); }
+.not-found .status-dot { background: var(--red); }
+.ambiguous .status-dot { background: var(--yellow); }
+.thinking .status-dot { background: var(--border); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.code-tag {
+  background: var(--tag-bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.product-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  line-height: 1.35;
+  margin-bottom: 7px;
+  font-style: italic;
+}
+
+.price-row { display: flex; align-items: baseline; gap: 8px; }
+.price-label { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.price-value { font-size: 1.2rem; font-weight: 500; color: var(--green); }
+
+.error-msg { font-size: 0.8rem; color: var(--red); margin-bottom: 5px; }
+
+.similar-list { margin-top: 8px; }
+.similar-list p { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.similar-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 7px 10px;
+  margin-bottom: 3px;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.similar-item:hover { border-color: var(--accent); }
+.similar-item span { color: var(--muted); font-size: 0.7rem; }
+
+.amb-option {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+}
+.amb-question { font-size: 0.68rem; color: var(--muted); margin-top: 7px; }
+
+/* ── Clarification buttons ── */
+.clarify-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  animation: fadeIn 0.2s ease;
+}
+.clarify-box p { font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+.clarify-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.clarify-btn {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  letter-spacing: 0.04em;
+}
+.clarify-btn:hover { border-color: var(--accent); background: var(--tag-bg); }
+
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Ainhoa Vintage</h1>
+    <span class="subtitle">Consulta de stock</span>
+  </div>
+  <button class="stock-badge" id="stockBadge" onclick="reloadStock()">⟳ Cargando...</button>
+</header>
+
+<div class="main">
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('code')" id="tab-code">
+      # Código
+    </button>
+    <button class="tab" onclick="switchTab('photo')" id="tab-photo">
+      ◎ Foto
+    </button>
+  </div>
+
+  <!-- Panel código -->
+  <div class="panel active" id="panel-code">
+    <div class="search-box">
+      <label>Código(s) de prenda</label>
+      <div class="input-row">
+        <textarea id="queryInput" placeholder="AIN-107-7&#10;103-15&#10;101-32"></textarea>
+        <button class="btn" onclick="searchByCode()">Buscar</button>
+      </div>
+      <p class="hint">Aceptá cualquier formato: AIN-107-7 · 107-07 · 107 07 · 107/7<br>Podés ingresar varios códigos, uno por línea.</p>
+    </div>
+    <div id="results-code" class="results"></div>
+  </div>
+
+  <!-- Panel foto -->
+  <div class="panel" id="panel-photo">
+    <div class="photo-box">
+      <label>Fotografía de la etiqueta</label>
+      <div class="drop-zone" id="dropZone">
+        <div class="icon">📷</div>
+        <p>Arrastrá la foto acá<br>o <strong>hacé clic para elegirla</strong></p>
+        <input type="file" id="photoInput" accept="image/*">
+      </div>
+      <div id="previewWrap">
+        <img id="previewImg" src="" alt="preview">
+        <button class="clear-photo" onclick="clearPhoto()">✕</button>
+      </div>
+      <div class="photo-actions" id="photoActions" style="display:none">
+        <button class="btn" onclick="analyzePhoto()" id="btnAnalyze">Leer código</button>
+        <button class="btn-secondary" onclick="clearPhoto()">Cambiar foto</button>
+      </div>
+    </div>
+    <div id="clarify-area"></div>
+    <div id="results-photo" class="results"></div>
+  </div>
+
+</div>
+
+<footer>Ainhoa Vintage · Sistema interno · Stock en tiempo real</footer>
+
+<script>
+// ════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════
+const SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/1y7gcnhXDbqA17pHO1-5QODP_-YOi_Vc-6qWCGkq6EWM/gviz/tq?tqx=out:csv&sheet=Ingresos';
+const CORS_PROXY = 'https://corsproxy.io/?';
+
+let stockData = [];
+let currentPhotoBase64 = null;
+
+// ════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ════════════════════════════════════════════
+// CARGAR STOCK DESDE GOOGLE SHEETS
+// ════════════════════════════════════════════
+async function reloadStock() {
+  const badge = document.getElementById('stockBadge');
+  badge.textContent = '⟳ Cargando...';
+  badge.className = 'stock-badge loading';
+  try {
+    const url = CORS_PROXY + encodeURIComponent(SHEETS_CSV_URL);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    stockData = parseCSV(text);
+    badge.textContent = `✓ ${stockData.length} prendas`;
+    badge.className = 'stock-badge ok';
+  } catch(e) {
+    // Fallback: intentar sin proxy (por si están en el mismo dominio / CORS ok)
+    try {
+      const res2 = await fetch(SHEETS_CSV_URL);
+      const text2 = await res2.text();
+      stockData = parseCSV(text2);
+      badge.textContent = `✓ ${stockData.length} prendas`;
+      badge.className = 'stock-badge ok';
+    } catch(e2) {
+      badge.textContent = '✗ Sin conexión';
+      badge.className = 'stock-badge err';
+    }
+  }
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n');
+  const result = [];
+  // Fila 0 = headers. Cols: A=0, C=2, G=6, N=13
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCSVLine(lines[i]);
+    if (!cols || cols.length < 14) continue;
+    const codProv = cols[0];
+    const nroPrenda = cols[2];
+    const producto = cols[6];
+    const precioVenta = cols[13];
+    if (!codProv || !nroPrenda) continue;
+    const cp = parseInt(codProv, 10);
+    const np = String(nroPrenda).replace(/\.0$/, '').trim();
+    if (isNaN(cp) || !np) continue;
+    const prod = String(producto || '').trim();
+    const precio = precioVenta ? parseInt(String(precioVenta).replace(/[^0-9]/g, ''), 10) : null;
+    result.push({
+      c: `${cp}-${np}`,
+      p: prod,
+      v: isNaN(precio) ? null : precio
+    });
+  }
+  return result;
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === ',' && !inQuote) {
+      result.push(cur.trim()); cur = '';
+    } else { cur += ch; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+// ════════════════════════════════════════════
+// NORMALIZACIÓN DE CÓDIGOS
+// ════════════════════════════════════════════
+function normalizeCode(raw) {
+  // Soporta: AIN-107-7, AIN107-7, 107-7, 107-07, 107 7, 107/7
+  let s = raw.trim().toUpperCase();
+  // Quitar prefijo AIN
+  s = s.replace(/^AIN[-\s]*/i, '');
+  s = s.replace(/\s+/g, '').replace(/[\/\\]/g, '-').replace(/-+$/, '');
+  const parts = s.split('-');
+  if (parts.length >= 2) {
+    const prov = parseInt(parts[0], 10);
+    const pren = parseInt(parts[1], 10);
+    if (!isNaN(prov) && !isNaN(pren)) return `${prov}-${pren}`;
+  }
+  return s.toLowerCase();
+}
+
+function findItems(rawQuery) {
+  const norm = normalizeCode(rawQuery);
+  return stockData.filter(item => {
+    const ic = item.c.toLowerCase();
+    return ic === norm;
+  });
+}
+
+function findSimilar(rawQuery, limit = 5) {
+  const norm = normalizeCode(rawQuery);
+  const provPart = norm.split('-')[0];
+  const sameProvider = stockData.filter(i => i.c.startsWith(provPart + '-') && i.p);
+  const others = stockData.filter(i => !i.c.startsWith(provPart + '-') && i.p);
+  function score(a, b) {
+    let n = 0; const l = Math.min(a.length, b.length);
+    for (let i = 0; i < l; i++) if (a[i] === b[i]) n++;
+    return n / Math.max(a.length, b.length);
+  }
+  return [...sameProvider, ...others]
+    .map(item => ({ item, s: score(item.c, norm) }))
+    .sort((a,b) => b.s - a.s)
+    .slice(0, limit)
+    .map(x => x.item);
+}
+
+// ════════════════════════════════════════════
+// RENDER RESULTADOS
+// ════════════════════════════════════════════
+function formatPrice(v) {
+  return '$' + v.toLocaleString('es-AR');
+}
+
+function renderResult(rawQuery) {
+  if (!stockData.length) return `<div class="card not-found">
+    <div class="card-header"><div class="status-dot"></div><span class="code-tag">${rawQuery}</span></div>
+    <p class="error-msg">Stock no cargado. Hacé clic en el botón del encabezado para recargar.</p>
+  </div>`;
+
+  const matches = findItems(rawQuery);
+
+  if (matches.length === 0) {
+    const similar = findSimilar(rawQuery);
+    let html = `<div class="card not-found">
+      <div class="card-header"><div class="status-dot"></div><span class="code-tag">${rawQuery.trim()}</span></div>
+      <p class="error-msg">No encontré ese código en INGRESOS.</p>`;
+    if (similar.length) {
+      html += `<div class="similar-list"><p>Códigos similares</p>`;
+      similar.forEach(item => {
+        const price = item.v ? formatPrice(item.v) : '— sin precio';
+        html += `<div class="similar-item" onclick="fillCode('${item.c}')">
+          <strong>${item.c}</strong> · ${item.p || '—'} <span>· ${price}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    return html + `</div>`;
+  }
+
+  if (matches.length > 1) {
+    let html = `<div class="card ambiguous">
+      <div class="card-header"><div class="status-dot"></div><span class="code-tag">${rawQuery.trim()}</span><span style="font-size:0.68rem;color:var(--muted)">Varias coincidencias</span></div>`;
+    matches.forEach((item, i) => {
+      const price = item.v ? `<span style="color:var(--green)">${formatPrice(item.v)}</span>` : `<span style="color:var(--muted);font-style:italic">Sin precio</span>`;
+      html += `<div class="amb-option"><strong>${i+1}. ${item.c}</strong><br>${item.p || '—'}<br>${price}</div>`;
+    });
+    html += `<p class="amb-question">¿Cuál querés consultar?</p></div>`;
+    return html;
+  }
+
+  const item = matches[0];
+  if (!item.v) return `<div class="card no-price">
+    <div class="card-header"><div class="status-dot"></div><span class="code-tag">${item.c}</span></div>
+    <p class="product-name">${item.p || '—'}</p>
+    <p style="font-size:0.76rem;color:var(--muted);font-style:italic">Sin precio asignado — revisá el estado en la planilla.</p>
+  </div>`;
+
+  return `<div class="card found">
+    <div class="card-header"><div class="status-dot"></div><span class="code-tag">${item.c}</span></div>
+    <p class="product-name">${item.p}</p>
+    <div class="price-row">
+      <span class="price-label">Precio de venta</span>
+      <span class="price-value">${formatPrice(item.v)}</span>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════
+// BÚSQUEDA POR CÓDIGO
+// ════════════════════════════════════════════
+function searchByCode() {
+  const raw = document.getElementById('queryInput').value.trim();
+  if (!raw) return;
+  const queries = raw.split('\n').map(s => s.trim()).filter(Boolean);
+  document.getElementById('results-code').innerHTML = queries.map(renderResult).join('');
+}
+
+function fillCode(code) {
+  switchTab('code');
+  document.getElementById('queryInput').value = code;
+  searchByCode();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('queryInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); searchByCode(); }
+  });
+});
+
+// ════════════════════════════════════════════
+// FOTO — upload & preview
+// ════════════════════════════════════════════
+const dropZone = document.getElementById('dropZone');
+const photoInput = document.getElementById('photoInput');
+
+dropZone.addEventListener('click', () => photoInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadPhoto(e.dataTransfer.files[0]);
+});
+photoInput.addEventListener('change', () => { if (photoInput.files[0]) loadPhoto(photoInput.files[0]); });
+
+function loadPhoto(file) {
+  if (!file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const b64 = e.target.result.split(',')[1];
+    currentPhotoBase64 = b64;
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('photoActions').style.display = 'flex';
+    dropZone.style.display = 'none';
+    document.getElementById('clarify-area').innerHTML = '';
+    document.getElementById('results-photo').innerHTML = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() {
+  currentPhotoBase64 = null;
+  photoInput.value = '';
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('photoActions').style.display = 'none';
+  dropZone.style.display = 'block';
+  document.getElementById('clarify-area').innerHTML = '';
+  document.getElementById('results-photo').innerHTML = '';
+}
+
+// ════════════════════════════════════════════
+// FOTO — análisis con Claude API
+// ════════════════════════════════════════════
+async function analyzePhoto() {
+  if (!currentPhotoBase64) return;
+  const btn = document.getElementById('btnAnalyze');
+  btn.disabled = true;
+  btn.textContent = 'Analizando...';
+  document.getElementById('clarify-area').innerHTML = '';
+  document.getElementById('results-photo').innerHTML = `
+    <div class="card thinking">
+      <div class="card-header"><div class="status-dot"></div><span style="font-size:0.78rem;color:var(--muted)">Leyendo la etiqueta...</span></div>
+    </div>`;
+
+  try {
+    const prompt = `Estás analizando una foto de una etiqueta de prenda de Ainhoa Vintage.
+Los códigos tienen el formato AIN-[número proveedor]-[número prenda], por ejemplo: AIN-107-7 o AIN-103-15.
+A veces el prefijo AIN puede estar separado por guión o espacio, o puede que el código no tenga el prefijo.
+
+Tu tarea:
+1. Buscá en la imagen cualquier código con ese formato.
+2. Si encontrás un código claro, respondé SOLO con este JSON exacto (sin texto extra):
+{"found": true, "code": "107-7", "confidence": "high"}
+(usa solo los números, sin AIN)
+
+3. Si la imagen es poco clara o hay varias opciones, respondé:
+{"found": false, "reason": "...", "suggestions": ["opción 1", "opción 2"]}
+Las sugerencias deben ser códigos posibles en formato número-número.
+
+4. Si definitivamente no hay ningún código visible:
+{"found": false, "reason": "no_code_visible", "suggestions": []}
+
+Respondé SOLO con el JSON, sin texto adicional.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentPhotoBase64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const rawText = data.content?.map(b => b.text || '').join('').trim();
+    const clean = rawText.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+
+    if (parsed.found && parsed.code) {
+      // Código encontrado con confianza
+      document.getElementById('results-photo').innerHTML = renderResult(parsed.code);
+      document.getElementById('clarify-area').innerHTML = '';
+    } else {
+      // No encontró o hay dudas
+      showClarification(parsed);
+    }
+
+  } catch(e) {
+    document.getElementById('results-photo').innerHTML = `<div class="card not-found">
+      <div class="card-header"><div class="status-dot"></div></div>
+      <p class="error-msg">No pude analizar la imagen. Intentá con el código manual.</p>
+    </div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Leer código';
+}
+
+function showClarification(parsed) {
+  document.getElementById('results-photo').innerHTML = '';
+  const clarifyArea = document.getElementById('clarify-area');
+
+  if (parsed.reason === 'no_code_visible') {
+    clarifyArea.innerHTML = `<div class="clarify-box">
+      <p>No pude ver ningún código en la foto. ¿Querés intentar algo?</p>
+      <div class="clarify-options">
+        <button class="clarify-btn" onclick="clearPhoto()">📷 Sacar otra foto</button>
+        <button class="clarify-btn" onclick="switchTab('code')">✏️ Ingresar código manual</button>
+      </div>
+    </div>`;
+    return;
+  }
+
+  let html = `<div class="clarify-box"><p>${parsed.reason || 'No pude leer el código con certeza. ¿Cuál es?'}</p><div class="clarify-options">`;
+
+  if (parsed.suggestions && parsed.suggestions.length) {
+    parsed.suggestions.forEach(s => {
+      html += `<button class="clarify-btn" onclick="searchFromPhoto('${s}')">${s}</button>`;
+    });
+  }
+
+  html += `<button class="clarify-btn" onclick="clearPhoto()">📷 Otra foto</button>
+    <button class="clarify-btn" onclick="switchTab('code')">✏️ Ingresar manual</button>
+  </div></div>`;
+
+  clarifyArea.innerHTML = html;
+}
+
+function searchFromPhoto(code) {
+  document.getElementById('clarify-area').innerHTML = '';
+  document.getElementById('results-photo').innerHTML = renderResult(code);
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+reloadStock();
+</script>
+</body>
+</html>
